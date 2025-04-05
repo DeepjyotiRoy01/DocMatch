@@ -7,7 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useApp } from '@/contexts/AppContext';
 import { toast } from 'sonner';
-import { Mail, ArrowLeft, Check, RotateCw } from 'lucide-react';
+import { Mail, ArrowLeft, Check, RotateCw, AlertCircle, Info } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { 
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot
+} from "@/components/ui/input-otp";
 
 const Verify = () => {
   const { email } = useParams<{ email: string }>();
@@ -17,6 +23,7 @@ const Verify = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resendDisabled, setResendDisabled] = useState(false);
   const [countdown, setCountdown] = useState(0);
+  const [otpSent, setOtpSent] = useState(false);
   
   const decodedEmail = email ? decodeURIComponent(email) : '';
   
@@ -45,11 +52,21 @@ const Verify = () => {
     }
   }, [countdown]);
   
+  // Check if a verification code exists for this email
+  useEffect(() => {
+    if (decodedEmail && pendingVerifications[decodedEmail]) {
+      setOtpSent(true);
+    } else {
+      // Automatically send a verification code if none exists
+      handleResendCode();
+    }
+  }, [decodedEmail, pendingVerifications]);
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!otp.trim()) {
-      toast.error("Please enter the verification code");
+    if (!otp.trim() || otp.length !== 6) {
+      toast.error("Please enter the complete 6-digit verification code");
       return;
     }
     
@@ -75,6 +92,7 @@ const Verify = () => {
     const success = await sendVerificationEmail(decodedEmail);
     
     if (success) {
+      setOtpSent(true);
       toast.success("New verification code sent");
     } else {
       toast.error("Failed to send verification code");
@@ -85,6 +103,10 @@ const Verify = () => {
   
   const handleGoBack = () => {
     navigate("/landing");
+  };
+  
+  const handleOtpChange = (value: string) => {
+    setOtp(value);
   };
 
   return (
@@ -97,23 +119,40 @@ const Verify = () => {
             </div>
             <CardTitle className="text-2xl">Verify Your Email</CardTitle>
             <CardDescription>
-              We've sent a verification code to {decodedEmail}
+              {otpSent ? (
+                <>Verification code sent to {decodedEmail}</>
+              ) : (
+                <>Sending verification code to {decodedEmail}...</>
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <Alert variant="info" className="mb-4 bg-blue-50 dark:bg-blue-950">
+              <Info className="h-4 w-4" />
+              <AlertTitle>Important Information</AlertTitle>
+              <AlertDescription>
+                For this demo app, the OTP is displayed in the browser console. Please check the developer console (F12) to see your verification code.
+              </AlertDescription>
+            </Alert>
+            
             <form onSubmit={handleSubmit}>
               <div className="grid gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="otp">Verification Code</Label>
-                  <Input
-                    id="otp"
-                    placeholder="Enter 6-digit code"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    maxLength={6}
-                  />
+                  <div className="flex justify-center my-4">
+                    <InputOTP maxLength={6} value={otp} onChange={handleOtpChange}>
+                      <InputOTPGroup>
+                        <InputOTPSlot index={0} />
+                        <InputOTPSlot index={1} />
+                        <InputOTPSlot index={2} />
+                        <InputOTPSlot index={3} />
+                        <InputOTPSlot index={4} />
+                        <InputOTPSlot index={5} />
+                      </InputOTPGroup>
+                    </InputOTP>
+                  </div>
                 </div>
-                <Button type="submit" disabled={isSubmitting}>
+                <Button type="submit" disabled={isSubmitting || !otpSent || otp.length !== 6}>
                   {isSubmitting ? (
                     <>
                       <RotateCw className="mr-2 h-4 w-4 animate-spin" />

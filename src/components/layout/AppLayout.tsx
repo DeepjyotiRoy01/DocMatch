@@ -53,7 +53,7 @@ export const AppLayout = () => {
     },
     { 
       title: "My Documents", 
-      path: "/#documents", 
+      path: "/#results", 
       icon: FileText 
     },
     { 
@@ -71,6 +71,16 @@ export const AppLayout = () => {
   const handleThemeToggle = () => {
     toggleTheme();
     toast.success(`Switched to ${theme === "dark" ? "light" : "dark"} mode`);
+  };
+
+  const handleNavigation = (path: string) => {
+    if (path.includes("#")) {
+      const id = path.split("#")[1];
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+    }
   };
 
   return (
@@ -92,16 +102,29 @@ export const AppLayout = () => {
                 <SidebarMenu>
                   {menuItems.map((item) => (
                     <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton asChild className={cn(
-                        "font-medium transition-all duration-200 hover:bg-primary/20",
-                        location.pathname + location.hash === item.path 
-                          ? "bg-primary/20 border-l-2 border-primary" 
-                          : ""
-                      )}>
-                        <Link to={item.path} className="flex items-center">
-                          <item.icon className="h-5 w-5 mr-3" />
-                          <span>{item.title}</span>
-                        </Link>
+                      <SidebarMenuButton 
+                        asChild 
+                        className={cn(
+                          "font-medium transition-all duration-200 hover:bg-primary/20",
+                          location.pathname + location.hash === item.path 
+                            ? "bg-primary/20 border-l-2 border-primary" 
+                            : ""
+                        )}
+                      >
+                        {item.path.startsWith("/") && !item.path.includes("#") ? (
+                          <Link to={item.path} className="flex items-center">
+                            <item.icon className="h-5 w-5 mr-3" />
+                            <span>{item.title}</span>
+                          </Link>
+                        ) : (
+                          <button 
+                            onClick={() => handleNavigation(item.path)} 
+                            className="flex items-center w-full text-left"
+                          >
+                            <item.icon className="h-5 w-5 mr-3" />
+                            <span>{item.title}</span>
+                          </button>
+                        )}
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
@@ -118,7 +141,7 @@ export const AppLayout = () => {
                 <Toggle 
                   pressed={theme === "light"}
                   onPressedChange={handleThemeToggle}
-                  className="mr-4 border border-primary/20 hover:bg-primary/10"
+                  className="border border-primary/20 hover:bg-primary/10"
                   aria-label="Toggle theme"
                 >
                   {theme === "dark" ? (

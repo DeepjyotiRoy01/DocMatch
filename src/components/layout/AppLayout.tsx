@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { 
   SidebarProvider, 
@@ -14,11 +14,22 @@ import {
   SidebarGroupContent,
   SidebarHeader
 } from "@/components/ui/sidebar";
-import { Upload, Search, CreditCard, Settings, Home, FileText, BarChart3 } from "lucide-react";
+import { Upload, Search, CreditCard, Settings, Home, FileText, BarChart3, LogIn } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle,
+  DialogTrigger
+} from "@/components/ui/dialog";
+import AuthDialog from "@/components/auth/AuthDialog";
 
 export const AppLayout = () => {
   const location = useLocation();
+  const [authOpen, setAuthOpen] = useState(false);
   
   const menuItems = [
     { 
@@ -92,7 +103,20 @@ export const AppLayout = () => {
         </Sidebar>
         <div className="flex-1 overflow-auto bg-gradient-to-br from-background to-secondary/30">
           <div className="p-4 sm:p-6 lg:p-8">
-            <SidebarTrigger className="mb-4" />
+            <div className="flex justify-between items-center mb-6">
+              <SidebarTrigger className="mr-4" />
+              <Dialog open={authOpen} onOpenChange={setAuthOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="gap-2 bg-primary/10 hover:bg-primary/20 border-primary/20">
+                    <LogIn className="h-4 w-4" />
+                    <span>Login / Sign Up</span>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <AuthDialog onClose={() => setAuthOpen(false)} />
+                </DialogContent>
+              </Dialog>
+            </div>
             <Outlet />
           </div>
         </div>

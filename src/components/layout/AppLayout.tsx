@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { 
   SidebarProvider, 
@@ -14,7 +14,7 @@ import {
   SidebarGroupContent,
   SidebarHeader
 } from "@/components/ui/sidebar";
-import { Upload, Search, CreditCard, Download, Settings, Home, FileText } from "lucide-react";
+import { Upload, Search, CreditCard, Settings, Home, FileText, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const AppLayout = () => {
@@ -56,22 +56,30 @@ export const AppLayout = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
-        <Sidebar>
-          <SidebarHeader className="flex items-center px-4 py-2">
-            <h1 className="text-lg font-bold text-primary">DocMatch</h1>
+        <Sidebar className="border-r border-white/10">
+          <SidebarHeader className="flex items-center px-4 py-3 bg-sidebar-accent">
+            <div className="flex items-center">
+              <BarChart3 className="w-6 h-6 text-primary mr-2" />
+              <h1 className="text-xl font-bold text-gradient tracking-tight">DocMatch</h1>
+            </div>
           </SidebarHeader>
           <SidebarContent>
             <SidebarGroup>
-              <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+              <SidebarGroupLabel className="text-xs font-bold uppercase tracking-wider">
+                Navigation
+              </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {menuItems.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild className={cn(
-                        location.pathname + location.hash === item.path ? "bg-sidebar-accent" : ""
+                        "font-medium transition-all duration-200 hover:bg-primary/20",
+                        location.pathname + location.hash === item.path 
+                          ? "bg-primary/20 border-l-2 border-primary" 
+                          : ""
                       )}>
-                        <Link to={item.path}>
-                          <item.icon className="h-4 w-4 mr-2" />
+                        <Link to={item.path} className="flex items-center">
+                          <item.icon className="h-5 w-5 mr-3" />
                           <span>{item.title}</span>
                         </Link>
                       </SidebarMenuButton>
@@ -82,7 +90,7 @@ export const AppLayout = () => {
             </SidebarGroup>
           </SidebarContent>
         </Sidebar>
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto bg-gradient-to-br from-background to-secondary/30">
           <div className="p-4 sm:p-6 lg:p-8">
             <SidebarTrigger className="mb-4" />
             <Outlet />

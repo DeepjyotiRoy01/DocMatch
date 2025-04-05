@@ -75,11 +75,16 @@ export const AppLayout = () => {
 
   const handleNavigation = (path: string) => {
     if (path.includes("#")) {
-      const id = path.split("#")[1];
-      const element = document.getElementById(id);
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth" });
-      }
+      navigate("/");
+      setTimeout(() => {
+        const id = path.split("#")[1];
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 100);
+    } else {
+      navigate(path);
     }
   };
 
@@ -94,28 +99,6 @@ export const AppLayout = () => {
             </div>
           </SidebarHeader>
           <SidebarContent>
-            {/* Theme toggle moved to top of sidebar content */}
-            <div className="p-4 border-b border-border/40">
-              <Toggle 
-                pressed={theme === "light"}
-                onPressedChange={handleThemeToggle}
-                className="w-full justify-start border border-primary/20 hover:bg-primary/10"
-                aria-label="Toggle theme"
-              >
-                {theme === "dark" ? (
-                  <>
-                    <Sun className="h-4 w-4 mr-2" />
-                    <span>Light Mode</span>
-                  </>
-                ) : (
-                  <>
-                    <Moon className="h-4 w-4 mr-2" />
-                    <span>Dark Mode</span>
-                  </>
-                )}
-              </Toggle>
-            </div>
-            
             <SidebarGroup>
               <SidebarGroupLabel className="text-xs font-bold uppercase tracking-wider">
                 Navigation
@@ -125,29 +108,19 @@ export const AppLayout = () => {
                   {menuItems.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton 
-                        asChild 
+                        tooltip={item.title}
                         className={cn(
                           "font-medium transition-all duration-200 hover:bg-primary/20",
                           (location.pathname === item.path || 
+                           (location.pathname === "/" && item.path.includes("/#")) || 
                            (location.pathname + location.hash === item.path)) 
                             ? "bg-primary/20 border-l-2 border-primary" 
                             : ""
                         )}
+                        onClick={() => handleNavigation(item.path)}
                       >
-                        {item.path.startsWith("/") && !item.path.includes("#") ? (
-                          <Link to={item.path} className="flex items-center">
-                            <item.icon className="h-5 w-5 mr-3" />
-                            <span>{item.title}</span>
-                          </Link>
-                        ) : (
-                          <button 
-                            onClick={() => handleNavigation(item.path)} 
-                            className="flex items-center w-full text-left"
-                          >
-                            <item.icon className="h-5 w-5 mr-3" />
-                            <span>{item.title}</span>
-                          </button>
-                        )}
+                        <item.icon className="h-5 w-5 mr-3" />
+                        <span>{item.title}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
@@ -162,17 +135,33 @@ export const AppLayout = () => {
               <div className="flex items-center">
                 <SidebarTrigger className="mr-4" />
               </div>
-              <Dialog open={authOpen} onOpenChange={setAuthOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="gap-2 bg-primary/10 hover:bg-primary/20 border-primary/20">
-                    <LogIn className="h-4 w-4" />
-                    <span>{currentUser ? currentUser.name : "Login / Sign Up"}</span>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
-                  <AuthDialog onClose={() => setAuthOpen(false)} />
-                </DialogContent>
-              </Dialog>
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  onClick={handleThemeToggle} 
+                  className="bg-primary/10 hover:bg-primary/20 border-primary/20"
+                  title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                >
+                  {theme === "dark" ? (
+                    <Sun className="h-4 w-4" />
+                  ) : (
+                    <Moon className="h-4 w-4" />
+                  )}
+                </Button>
+                
+                <Dialog open={authOpen} onOpenChange={setAuthOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="gap-2 bg-primary/10 hover:bg-primary/20 border-primary/20">
+                      <LogIn className="h-4 w-4" />
+                      <span>{currentUser ? currentUser.name : "Login / Sign Up"}</span>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <AuthDialog onClose={() => setAuthOpen(false)} />
+                  </DialogContent>
+                </Dialog>
+              </div>
             </div>
             <Outlet />
           </div>

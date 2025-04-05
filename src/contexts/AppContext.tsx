@@ -251,12 +251,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         [email]: {
           otp,
           expires: expiry,
-          verified: false
+          verified: true
         }
       }));
       
-      console.log(`Verification OTP for ${email}: ${otp}`);
-      toast.success(`Verification code sent to ${email}. Check the console for the OTP.`);
       return true;
     } catch (error) {
       console.error("Error sending verification email:", error);
@@ -265,30 +263,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const verifyOtp = async (email: string, otp: string): Promise<boolean> => {
-    const verification = pendingVerifications[email];
-    if (!verification) {
-      toast.error("No verification pending for this email");
-      return false;
-    }
-    
-    if (new Date() > verification.expires) {
-      toast.error("Verification code has expired");
-      return false;
-    }
-    
-    if (verification.otp !== otp) {
-      toast.error("Invalid verification code");
-      return false;
-    }
-    
-    setPendingVerifications(prev => ({
-      ...prev,
-      [email]: {
-        ...prev[email],
-        verified: true
-      }
-    }));
-    
     return true;
   };
 
@@ -307,11 +281,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     
     if (!user) {
       toast.error("User not found");
-      return false;
-    }
-    
-    if (!user.verified) {
-      toast.error("Please verify your email first");
       return false;
     }
     
@@ -335,14 +304,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       credits: 20,
       usedCredits: 0,
       dailyLimit: 20,
-      verified: false
+      verified: true
     };
     
     setUsers(prev => [...prev, newUser]);
     
-    await sendVerificationEmail(email);
+    setCurrentUser(newUser);
+    setIsAuthenticated(true);
     
-    toast.success("Account created! Please verify your email address");
+    toast.success("Account created successfully!");
     return true;
   };
 

@@ -39,7 +39,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({ onClose }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login, signup, sendVerificationEmail } = useApp();
+  const { login, signup } = useApp();
 
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -78,8 +78,8 @@ const AuthDialog: React.FC<AuthDialogProps> = ({ onClose }) => {
       const success = await signup(values.name, values.email, values.password);
       if (success) {
         onClose();
-        // Navigate to verification page
-        navigate(`/verify/${encodeURIComponent(values.email)}`);
+        // Navigate directly to the main page instead of verification
+        navigate("/");
       }
     } finally {
       setIsSubmitting(false);

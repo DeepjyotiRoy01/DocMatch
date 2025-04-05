@@ -14,7 +14,7 @@ import {
   SidebarGroupContent,
   SidebarHeader
 } from "@/components/ui/sidebar";
-import { Upload, Search, CreditCard, Settings, Home, FileText, BarChart3, LogIn } from "lucide-react";
+import { Upload, Search, CreditCard, Settings, Home, FileText, BarChart3, LogIn, Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { 
@@ -26,10 +26,14 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import AuthDialog from "@/components/auth/AuthDialog";
+import { useTheme } from "@/contexts/ThemeContext";
+import { Toggle } from "@/components/ui/toggle";
+import { toast } from "sonner";
 
 export const AppLayout = () => {
   const location = useLocation();
   const [authOpen, setAuthOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
   
   const menuItems = [
     { 
@@ -63,6 +67,11 @@ export const AppLayout = () => {
       icon: Settings 
     }
   ];
+
+  const handleThemeToggle = () => {
+    toggleTheme();
+    toast.success(`Switched to ${theme === "dark" ? "light" : "dark"} mode`);
+  };
 
   return (
     <SidebarProvider>
@@ -104,7 +113,21 @@ export const AppLayout = () => {
         <div className="flex-1 overflow-auto bg-gradient-to-br from-background to-secondary/30">
           <div className="p-4 sm:p-6 lg:p-8">
             <div className="flex justify-between items-center mb-6">
-              <SidebarTrigger className="mr-4" />
+              <div className="flex items-center">
+                <SidebarTrigger className="mr-4" />
+                <Toggle 
+                  pressed={theme === "light"}
+                  onPressedChange={handleThemeToggle}
+                  className="mr-4 border border-primary/20 hover:bg-primary/10"
+                  aria-label="Toggle theme"
+                >
+                  {theme === "dark" ? (
+                    <Sun className="h-4 w-4" />
+                  ) : (
+                    <Moon className="h-4 w-4" />
+                  )}
+                </Toggle>
+              </div>
               <Dialog open={authOpen} onOpenChange={setAuthOpen}>
                 <DialogTrigger asChild>
                   <Button variant="outline" className="gap-2 bg-primary/10 hover:bg-primary/20 border-primary/20">

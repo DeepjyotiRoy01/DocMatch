@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/contexts/AppContext';
-import { Download, FileText, Search } from 'lucide-react';
+import { Download, FileText, Search, Upload } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const Documents = () => {

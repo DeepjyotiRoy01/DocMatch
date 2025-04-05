@@ -94,6 +94,28 @@ export const AppLayout = () => {
             </div>
           </SidebarHeader>
           <SidebarContent>
+            {/* Theme toggle moved to top of sidebar content */}
+            <div className="p-4 border-b border-border/40">
+              <Toggle 
+                pressed={theme === "light"}
+                onPressedChange={handleThemeToggle}
+                className="w-full justify-start border border-primary/20 hover:bg-primary/10"
+                aria-label="Toggle theme"
+              >
+                {theme === "dark" ? (
+                  <>
+                    <Sun className="h-4 w-4 mr-2" />
+                    <span>Light Mode</span>
+                  </>
+                ) : (
+                  <>
+                    <Moon className="h-4 w-4 mr-2" />
+                    <span>Dark Mode</span>
+                  </>
+                )}
+              </Toggle>
+            </div>
+            
             <SidebarGroup>
               <SidebarGroupLabel className="text-xs font-bold uppercase tracking-wider">
                 Navigation
@@ -132,28 +154,6 @@ export const AppLayout = () => {
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
-            
-            {/* Theme toggle moved to the bottom of sidebar */}
-            <div className="mt-auto p-4">
-              <Toggle 
-                pressed={theme === "light"}
-                onPressedChange={handleThemeToggle}
-                className="w-full justify-start border border-primary/20 hover:bg-primary/10"
-                aria-label="Toggle theme"
-              >
-                {theme === "dark" ? (
-                  <>
-                    <Sun className="h-4 w-4 mr-2" />
-                    <span>Light Mode</span>
-                  </>
-                ) : (
-                  <>
-                    <Moon className="h-4 w-4 mr-2" />
-                    <span>Dark Mode</span>
-                  </>
-                )}
-              </Toggle>
-            </div>
           </SidebarContent>
         </Sidebar>
         <div className="flex-1 overflow-auto bg-gradient-to-br from-background to-secondary/30">
@@ -183,4 +183,3 @@ export const AppLayout = () => {
 };
 
 export default AppLayout;
-

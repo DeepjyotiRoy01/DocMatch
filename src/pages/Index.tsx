@@ -15,7 +15,7 @@ const Index = () => {
             <BarChart3 className="h-8 w-8 text-primary" />
           </div>
         </div>
-        <h1 className="text-5xl font-bold mb-4 text-gradient">Document Scanning & Matching</h1>
+        <h1 className="text-5xl font-bold mb-4 text-gradient">Document Scanning and Matching</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           Upload, match, and analyze documents with our intelligent system
         </p>

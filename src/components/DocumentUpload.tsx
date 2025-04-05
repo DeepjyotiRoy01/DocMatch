@@ -3,8 +3,9 @@ import React, { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload } from 'lucide-react';
+import { Upload, LogIn } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
+import { toast } from "sonner";
 
 const DocumentUpload: React.FC = () => {
   const { addDocument, currentUser } = useApp();
@@ -29,7 +30,12 @@ const DocumentUpload: React.FC = () => {
   };
 
   const handleUpload = () => {
-    if (!docName || !fileContent || !currentUser) return;
+    if (!docName || !fileContent || !currentUser) {
+      if (!currentUser) {
+        toast.error("You need to log in to upload documents");
+      }
+      return;
+    }
     
     setIsUploading(true);
     
@@ -51,6 +57,34 @@ const DocumentUpload: React.FC = () => {
       setIsUploading(false);
     }, 1000);
   };
+
+  if (!currentUser) {
+    return (
+      <Card id="upload" className="w-full">
+        <CardHeader>
+          <CardTitle className="text-2xl">Document Upload</CardTitle>
+          <CardDescription>
+            Please log in to upload documents
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-6">
+            <div className="bg-primary/10 p-6 rounded-full inline-block mb-4">
+              <LogIn className="h-10 w-10 text-primary" />
+            </div>
+            <h3 className="text-lg font-medium mb-2">Authentication Required</h3>
+            <p className="text-muted-foreground mb-4">
+              You need to be logged in to upload documents to the system.
+            </p>
+            <Button>
+              <LogIn className="h-4 w-4 mr-2" />
+              Login to Upload
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card id="upload" className="w-full">

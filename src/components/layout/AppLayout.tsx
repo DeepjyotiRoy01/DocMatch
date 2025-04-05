@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { 
   SidebarProvider, 
   Sidebar, 
@@ -19,21 +19,21 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { 
   Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle,
+  DialogContent,
   DialogTrigger
 } from "@/components/ui/dialog";
 import AuthDialog from "@/components/auth/AuthDialog";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Toggle } from "@/components/ui/toggle";
 import { toast } from "sonner";
+import { useApp } from "@/contexts/AppContext";
 
 export const AppLayout = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [authOpen, setAuthOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const { currentUser } = useApp();
   
   const menuItems = [
     { 
@@ -53,7 +53,7 @@ export const AppLayout = () => {
     },
     { 
       title: "My Documents", 
-      path: "/#results", 
+      path: "/documents", 
       icon: FileText 
     },
     { 
@@ -106,7 +106,8 @@ export const AppLayout = () => {
                         asChild 
                         className={cn(
                           "font-medium transition-all duration-200 hover:bg-primary/20",
-                          location.pathname + location.hash === item.path 
+                          (location.pathname === item.path || 
+                           (location.pathname + location.hash === item.path)) 
                             ? "bg-primary/20 border-l-2 border-primary" 
                             : ""
                         )}
@@ -131,6 +132,28 @@ export const AppLayout = () => {
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
+            
+            {/* Theme toggle moved to the bottom of sidebar */}
+            <div className="mt-auto p-4">
+              <Toggle 
+                pressed={theme === "light"}
+                onPressedChange={handleThemeToggle}
+                className="w-full justify-start border border-primary/20 hover:bg-primary/10"
+                aria-label="Toggle theme"
+              >
+                {theme === "dark" ? (
+                  <>
+                    <Sun className="h-4 w-4 mr-2" />
+                    <span>Light Mode</span>
+                  </>
+                ) : (
+                  <>
+                    <Moon className="h-4 w-4 mr-2" />
+                    <span>Dark Mode</span>
+                  </>
+                )}
+              </Toggle>
+            </div>
           </SidebarContent>
         </Sidebar>
         <div className="flex-1 overflow-auto bg-gradient-to-br from-background to-secondary/30">
@@ -138,24 +161,12 @@ export const AppLayout = () => {
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center">
                 <SidebarTrigger className="mr-4" />
-                <Toggle 
-                  pressed={theme === "light"}
-                  onPressedChange={handleThemeToggle}
-                  className="border border-primary/20 hover:bg-primary/10"
-                  aria-label="Toggle theme"
-                >
-                  {theme === "dark" ? (
-                    <Sun className="h-4 w-4" />
-                  ) : (
-                    <Moon className="h-4 w-4" />
-                  )}
-                </Toggle>
               </div>
               <Dialog open={authOpen} onOpenChange={setAuthOpen}>
                 <DialogTrigger asChild>
                   <Button variant="outline" className="gap-2 bg-primary/10 hover:bg-primary/20 border-primary/20">
                     <LogIn className="h-4 w-4" />
-                    <span>Login / Sign Up</span>
+                    <span>{currentUser ? currentUser.name : "Login / Sign Up"}</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
@@ -172,3 +183,4 @@ export const AppLayout = () => {
 };
 
 export default AppLayout;
+

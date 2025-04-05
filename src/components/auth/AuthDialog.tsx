@@ -1,9 +1,9 @@
 
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -11,6 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { LogIn, UserPlus, Mail, Lock, User } from "lucide-react";
 import { toast } from "sonner";
+import { useApp } from "@/contexts/AppContext";
 
 interface AuthDialogProps {
   onClose: () => void;
@@ -35,7 +36,10 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 type SignupFormValues = z.infer<typeof signupSchema>;
 
 const AuthDialog: React.FC<AuthDialogProps> = ({ onClose }) => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login, signup, sendVerificationEmail } = useApp();
 
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -55,16 +59,31 @@ const AuthDialog: React.FC<AuthDialogProps> = ({ onClose }) => {
     },
   });
 
-  const onLoginSubmit = (values: LoginFormValues) => {
-    console.log("Login values:", values);
-    toast.success("Login successful!");
-    onClose();
+  const onLoginSubmit = async (values: LoginFormValues) => {
+    setIsSubmitting(true);
+    try {
+      const success = await login(values.email, values.password);
+      if (success) {
+        onClose();
+        navigate("/");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const onSignupSubmit = (values: SignupFormValues) => {
-    console.log("Signup values:", values);
-    toast.success("Account created successfully!");
-    onClose();
+  const onSignupSubmit = async (values: SignupFormValues) => {
+    setIsSubmitting(true);
+    try {
+      const success = await signup(values.name, values.email, values.password);
+      if (success) {
+        onClose();
+        // Navigate to verification page
+        navigate(`/verify/${encodeURIComponent(values.email)}`);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -138,7 +157,9 @@ const AuthDialog: React.FC<AuthDialogProps> = ({ onClose }) => {
                 )}
               />
               
-              <Button type="submit" className="w-full">Sign In</Button>
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? "Signing in..." : "Sign In"}
+              </Button>
             </form>
           </Form>
         </TabsContent>
@@ -232,7 +253,9 @@ const AuthDialog: React.FC<AuthDialogProps> = ({ onClose }) => {
                 )}
               />
               
-              <Button type="submit" className="w-full">Create Account</Button>
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? "Creating account..." : "Create Account"}
+              </Button>
             </form>
           </Form>
         </TabsContent>

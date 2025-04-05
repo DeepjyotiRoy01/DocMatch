@@ -4,14 +4,36 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search } from 'lucide-react';
+import { Search, Upload } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const DocumentMatching: React.FC = () => {
-  const { performMatch, currentUser } = useApp();
+  const { performMatch, currentUser, documents } = useApp();
   const [sourceText, setSourceText] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [algorithm, setAlgorithm] = useState<'frequency' | 'cosine' | 'levenshtein'>('frequency');
   const [isMatching, setIsMatching] = useState(false);
+  const [matchType, setMatchType] = useState<'all' | 'single' | 'text'>('all');
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string>('');
+  
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      
+      // Read file content
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target?.result as string;
+        setSourceText(content);
+      };
+      reader.readAsText(file);
+    }
+  };
   
   const handleMatch = () => {
     if (!sourceText || !currentUser) return;
@@ -20,7 +42,7 @@ const DocumentMatching: React.FC = () => {
     
     // Simulate processing delay
     setTimeout(() => {
-      performMatch(sourceText, algorithm);
+      performMatch(sourceText, algorithm, matchType, selectedDocumentId);
       setIsMatching(false);
     }, 1500);
   };
@@ -65,21 +87,107 @@ const DocumentMatching: React.FC = () => {
           </div>
           
           <div className="flex flex-col space-y-2">
-            <label htmlFor="source-text" className="text-sm font-medium">
-              Source Text
-            </label>
-            <Textarea
-              id="source-text"
-              placeholder="Enter or paste text to match against the database..."
-              value={sourceText}
-              onChange={(e) => setSourceText(e.target.value)}
-              rows={6}
-            />
+            <label className="text-sm font-medium">Match Against</label>
+            <RadioGroup 
+              defaultValue="all" 
+              value={matchType}
+              onValueChange={(value) => setMatchType(value as 'all' | 'single' | 'text')}
+              className="flex flex-col space-y-3"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="all" id="all" />
+                <Label htmlFor="all">All Documents</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="single" id="single" />
+                <Label htmlFor="single">Single Document</Label>
+              </div>
+            </RadioGroup>
           </div>
+          
+          {matchType === 'single' && documents.length > 0 && (
+            <div className="flex flex-col space-y-2">
+              <label htmlFor="document" className="text-sm font-medium">
+                Select Document
+              </label>
+              <Select
+                value={selectedDocumentId}
+                onValueChange={setSelectedDocumentId}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a document" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Documents</SelectLabel>
+                    {documents.map(doc => (
+                      <SelectItem key={doc.id} value={doc.id}>
+                        {doc.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          
+          <Tabs defaultValue="text" className="w-full">
+            <TabsList className="grid grid-cols-2 mb-4">
+              <TabsTrigger value="text">Enter Text</TabsTrigger>
+              <TabsTrigger value="file">Upload File</TabsTrigger>
+            </TabsList>
+            <TabsContent value="text" className="mt-0">
+              <div className="flex flex-col space-y-2">
+                <label htmlFor="source-text" className="text-sm font-medium">
+                  Source Text
+                </label>
+                <Textarea
+                  id="source-text"
+                  placeholder="Enter or paste text to match against the database..."
+                  value={sourceText}
+                  onChange={(e) => setSourceText(e.target.value)}
+                  rows={6}
+                />
+              </div>
+            </TabsContent>
+            <TabsContent value="file" className="mt-0">
+              <div className="flex flex-col space-y-2">
+                <label htmlFor="file-upload" className="text-sm font-medium">
+                  Upload File
+                </label>
+                <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+                  <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Click to browse or drag and drop
+                  </p>
+                  <input
+                    id="file-upload"
+                    type="file"
+                    onChange={handleFileChange}
+                    accept=".txt,.doc,.docx,.pdf"
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById('file-upload')?.click()}
+                    size="sm"
+                  >
+                    Select File
+                  </Button>
+                  {selectedFile && (
+                    <div className="mt-2 text-sm">
+                      Selected: <span className="font-medium">{selectedFile.name}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
           
           <Button 
             onClick={handleMatch} 
-            disabled={!sourceText || isMatching || (currentUser?.usedCredits ?? 0) >= (currentUser?.dailyLimit ?? 0) && !currentUser?.isAdmin}
+            disabled={!sourceText || isMatching || (matchType === 'single' && !selectedDocumentId) || (currentUser?.usedCredits ?? 0) >= (currentUser?.dailyLimit ?? 0) && !currentUser?.isAdmin}
             className="w-full"
           >
             {isMatching ? (

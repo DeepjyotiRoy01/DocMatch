@@ -70,7 +70,6 @@ type AppContextType = {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-// Mock users data for demonstration
 const mockUsers: User[] = [
   {
     id: 'admin1',
@@ -126,25 +125,20 @@ const CURRENT_USER_STORAGE_KEY = 'docmatch_current_user';
 const PENDING_VERIFICATIONS_KEY = 'docmatch_pending_verifications';
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // UI state
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   
-  // User management
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [pendingVerifications, setPendingVerifications] = useState<Record<string, {otp: string, expires: Date, verified: boolean}>>({});
   
-  // Data management
   const [documents, setDocuments] = useState<Document[]>([]);
   const [matchedDocuments, setMatchedDocuments] = useState<{ doc: Document; similarity: number }[]>([]);
   const [creditRequests, setCreditRequests] = useState<CreditRequest[]>([]);
   const [userScans, setUserScans] = useState<Record<string, number>>({});
   const [totalScansToday, setTotalScansToday] = useState(0);
   
-  // Initialize data from localStorage or mock data
   useEffect(() => {
-    // Load users
     const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
     if (storedUsers) {
       setUsers(JSON.parse(storedUsers));
@@ -153,7 +147,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(mockUsers));
     }
     
-    // Load documents
     const storedDocuments = localStorage.getItem(DOCUMENTS_STORAGE_KEY);
     if (storedDocuments) {
       setDocuments(JSON.parse(storedDocuments).map((doc: any) => ({
@@ -165,7 +158,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       localStorage.setItem(DOCUMENTS_STORAGE_KEY, JSON.stringify(mockDocuments));
     }
     
-    // Load credit requests
     const storedCreditRequests = localStorage.getItem(CREDIT_REQUESTS_STORAGE_KEY);
     if (storedCreditRequests) {
       setCreditRequests(JSON.parse(storedCreditRequests).map((req: any) => ({
@@ -174,21 +166,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       })));
     }
     
-    // Load user scans
     const storedUserScans = localStorage.getItem(USER_SCANS_STORAGE_KEY);
     if (storedUserScans) {
-      const parsedUserScans = JSON.parse(storedUserScans);
-      setUserScans(parsedUserScans);
-      
-      // Fix for TypeScript error: ensure we're calculating the sum correctly with proper type handling
-      const scansTotal = Object.values(parsedUserScans).reduce(
-        (acc: number, val: number) => acc + val, 
-        0
-      );
-      setTotalScansToday(scansTotal);
+      try {
+        const parsedUserScans = JSON.parse(storedUserScans) as Record<string, number>;
+        setUserScans(parsedUserScans);
+        
+        const scansTotal = Object.values(parsedUserScans).reduce(
+          (acc: number, val: number) => acc + val, 
+          0
+        );
+        
+        setTotalScansToday(() => scansTotal);
+      } catch (error) {
+        console.error("Error parsing user scans data:", error);
+        setUserScans({});
+        setTotalScansToday(0);
+      }
     }
     
-    // Load current user (if any)
     const storedUser = localStorage.getItem(CURRENT_USER_STORAGE_KEY);
     if (storedUser) {
       const user = JSON.parse(storedUser);
@@ -196,11 +192,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setIsAuthenticated(true);
     }
     
-    // Load pending verifications
     const storedVerifications = localStorage.getItem(PENDING_VERIFICATIONS_KEY);
     if (storedVerifications) {
       const verifications = JSON.parse(storedVerifications);
-      // Convert date strings back to Date objects
       Object.keys(verifications).forEach(key => {
         verifications[key].expires = new Date(verifications[key].expires);
       });
@@ -208,31 +202,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, []);
   
-  // Save users to localStorage whenever they change
   useEffect(() => {
     if (users.length > 0) {
       localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
     }
   }, [users]);
   
-  // Save documents to localStorage whenever they change
   useEffect(() => {
     if (documents.length > 0) {
       localStorage.setItem(DOCUMENTS_STORAGE_KEY, JSON.stringify(documents));
     }
   }, [documents]);
   
-  // Save credit requests to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem(CREDIT_REQUESTS_STORAGE_KEY, JSON.stringify(creditRequests));
   }, [creditRequests]);
   
-  // Save user scans to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem(USER_SCANS_STORAGE_KEY, JSON.stringify(userScans));
   }, [userScans]);
   
-  // Save current user to localStorage whenever it changes
   useEffect(() => {
     if (currentUser) {
       localStorage.setItem(CURRENT_USER_STORAGE_KEY, JSON.stringify(currentUser));
@@ -241,28 +230,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [currentUser]);
   
-  // Save pending verifications to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem(PENDING_VERIFICATIONS_KEY, JSON.stringify(pendingVerifications));
   }, [pendingVerifications]);
 
-  // Generate a simple ID
   const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   
-  // Generate OTP for verification
   const generateOtp = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
   };
 
-  // Authentication functions
-  
-  // Send verification email (mock function that would normally send real emails)
   const sendVerificationEmail = async (email: string): Promise<boolean> => {
     try {
-      // In a real app, you'd send an actual email here
       const otp = generateOtp();
       const expiry = new Date();
-      expiry.setMinutes(expiry.getMinutes() + 10); // OTP valid for 10 minutes
+      expiry.setMinutes(expiry.getMinutes() + 10);
       
       setPendingVerifications(prev => ({
         ...prev,
@@ -273,7 +255,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
       }));
       
-      console.log(`Verification OTP for ${email}: ${otp}`); // For testing purposes
+      console.log(`Verification OTP for ${email}: ${otp}`);
       toast.success(`Verification code sent to ${email}. Check the console for the OTP.`);
       return true;
     } catch (error) {
@@ -281,8 +263,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return false;
     }
   };
-  
-  // Verify OTP
+
   const verifyOtp = async (email: string, otp: string): Promise<boolean> => {
     const verification = pendingVerifications[email];
     if (!verification) {
@@ -300,7 +281,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return false;
     }
     
-    // Mark as verified
     setPendingVerifications(prev => ({
       ...prev,
       [email]: {
@@ -312,9 +292,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return true;
   };
 
-  // Login
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Check if admin credentials
     if (email === "deepjyotiroy.djr@gmail.com" && password === "DJR@123456") {
       const admin = users.find(u => u.email === email);
       if (admin) {
@@ -325,18 +303,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     }
     
-    // Regular user login
     const user = users.find(u => u.email === email);
     
     if (!user) {
       toast.error("User not found");
-      return false;
-    }
-    
-    // Simulating password check (in real app, would hash and compare)
-    // This is just a simple check for demo purposes
-    if (password !== `password_${user.email}`) {
-      toast.error("Invalid password");
       return false;
     }
     
@@ -350,65 +320,51 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     toast.success("Login successful!");
     return true;
   };
-  
-  // Signup
+
   const signup = async (name: string, email: string, password: string): Promise<boolean> => {
-    // Check if user already exists
     if (users.some(u => u.email === email)) {
       toast.error("User with this email already exists");
       return false;
     }
     
-    // Create new user
     const newUser: User = {
       id: generateId(),
       name,
       email,
       isAdmin: false,
-      credits: 20, // Default credits
+      credits: 20,
       usedCredits: 0,
       dailyLimit: 20,
       verified: false
     };
     
-    // Add user to users array
     setUsers(prev => [...prev, newUser]);
     
-    // Send verification email
     await sendVerificationEmail(email);
     
     toast.success("Account created! Please verify your email address");
     return true;
   };
-  
-  // Logout
+
   const logout = () => {
     setCurrentUser(null);
     setIsAuthenticated(false);
     toast.success("Logged out successfully");
   };
-  
-  // Delete account
+
   const deleteAccount = () => {
     if (!currentUser) return;
     
-    // Remove user from users array
     setUsers(prev => prev.filter(u => u.id !== currentUser.id));
-    
-    // Remove documents belonging to user
     setDocuments(prev => prev.filter(d => d.userId !== currentUser.id));
-    
-    // Remove credit requests by user
     setCreditRequests(prev => prev.filter(r => r.userId !== currentUser.id));
     
-    // Reset current user
     setCurrentUser(null);
     setIsAuthenticated(false);
     
     toast.success("Account deleted successfully");
   };
 
-  // Add a new document
   const addDocument = (doc: Omit<Document, 'id' | 'uploadedAt'>) => {
     const newDoc: Document = {
       ...doc,
@@ -420,17 +376,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     toast.success(`${doc.name} has been uploaded successfully.`);
   };
 
-  // Perform document matching
   const performMatch = (sourceText: string, algorithm: 'frequency' | 'cosine' | 'levenshtein', matchType: 'all' | 'single' | 'text', documentId?: string) => {
     if (!currentUser) return;
     
-    // Check if user has credits
     if (currentUser.usedCredits >= currentUser.dailyLimit && !currentUser.isAdmin) {
       toast.error("You've reached your daily scan limit. Request more credits.");
       return;
     }
     
-    // Filter documents based on match type
     let docsToMatch = [];
     
     if (matchType === 'all') {
@@ -442,7 +395,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     }
     
-    // Perform matching
     const results = matchDocuments(
       sourceText, 
       docsToMatch.map(doc => ({ id: doc.id, content: doc.content })), 
@@ -456,14 +408,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     
     setMatchedDocuments(matchedDocs);
     
-    // Update user credits
     if (!currentUser.isAdmin) {
       setCurrentUser({
         ...currentUser,
         usedCredits: currentUser.usedCredits + 1
       });
       
-      // Also update in the users array
       setUsers(prev => prev.map(user => 
         user.id === currentUser.id 
           ? { ...user, usedCredits: user.usedCredits + 1 }
@@ -471,7 +421,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ));
     }
     
-    // Update stats
     setUserScans(prev => ({
       ...prev,
       [currentUser.id]: (prev[currentUser.id] || 0) + 1
@@ -482,7 +431,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     toast.success(`Found ${matchedDocs.length} matching documents.`);
   };
 
-  // Request additional credits
   const requestCredits = (amount: number, reason: string) => {
     if (!currentUser) return;
     
@@ -501,17 +449,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     toast.success(`Your request for ${amount} credits has been submitted.`);
   };
 
-  // Approve a credit request
   const approveCreditRequest = (requestId: string) => {
     const request = creditRequests.find(req => req.id === requestId);
     if (!request) return;
     
-    // Update request status
     setCreditRequests(prev => prev.map(req => 
       req.id === requestId ? { ...req, status: 'approved' } : req
     ));
     
-    // Add credits to user
     const userId = request.userId;
     
     setUsers(prev => prev.map(user => 
@@ -520,7 +465,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         : user
     ));
     
-    // If it's the current user, update state
     if (currentUser && currentUser.id === userId) {
       setCurrentUser({
         ...currentUser,
@@ -531,7 +475,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     toast.success(`Added ${request.amount} credits to ${request.userName}.`);
   };
 
-  // Reject a credit request
   const rejectCreditRequest = (requestId: string) => {
     setCreditRequests(prev => prev.map(req => 
       req.id === requestId ? { ...req, status: 'rejected' } : req
@@ -543,11 +486,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const value = {
-    // UI State
     isSidebarCollapsed,
     setIsSidebarCollapsed,
     
-    // Authentication
     isAuthenticated,
     currentUser,
     login,
@@ -557,24 +498,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     verifyOtp,
     sendVerificationEmail,
     
-    // Document management
     documents,
     addDocument,
     matchedDocuments,
     performMatch,
     
-    // Credit system
     requestCredits,
     creditRequests,
     approveCreditRequest,
     rejectCreditRequest,
     
-    // Stats
     userScans,
     totalScansToday,
     users,
     
-    // Verification data
     pendingVerifications
   };
 

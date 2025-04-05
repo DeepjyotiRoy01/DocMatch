@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,7 +27,6 @@ const Verify = () => {
   const decodedEmail = email ? decodeURIComponent(email) : '';
   
   useEffect(() => {
-    // Check if email exists and is not already verified
     const user = users.find(u => u.email === decodedEmail);
     
     if (!decodedEmail || !user) {
@@ -52,12 +50,10 @@ const Verify = () => {
     }
   }, [countdown]);
   
-  // Check if a verification code exists for this email
   useEffect(() => {
     if (decodedEmail && pendingVerifications[decodedEmail]) {
       setOtpSent(true);
     } else {
-      // Automatically send a verification code if none exists
       handleResendCode();
     }
   }, [decodedEmail, pendingVerifications]);
@@ -76,7 +72,6 @@ const Verify = () => {
       const success = await verifyOtp(decodedEmail, otp);
       
       if (success) {
-        // Update user verification status
         toast.success("Email verified successfully. You can now log in.");
         navigate("/landing");
       }
@@ -87,7 +82,7 @@ const Verify = () => {
   
   const handleResendCode = async () => {
     setResendDisabled(true);
-    setCountdown(60); // Disable for 60 seconds
+    setCountdown(60);
     
     const success = await sendVerificationEmail(decodedEmail);
     
@@ -127,7 +122,7 @@ const Verify = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Alert variant="info" className="mb-4 bg-blue-50 dark:bg-blue-950">
+            <Alert className="mb-4 bg-blue-50 dark:bg-blue-950">
               <Info className="h-4 w-4" />
               <AlertTitle>Important Information</AlertTitle>
               <AlertDescription>

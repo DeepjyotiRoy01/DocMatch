@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { calculateWordFrequency, matchDocuments } from '@/utils/documentMatching';
 import { useToast } from '@/hooks/use-toast';
@@ -178,8 +177,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Load user scans
     const storedUserScans = localStorage.getItem(USER_SCANS_STORAGE_KEY);
     if (storedUserScans) {
-      setUserScans(JSON.parse(storedUserScans));
-      setTotalScansToday(Object.values(JSON.parse(storedUserScans)).reduce((a: number, b: number) => a + b, 0));
+      const parsedUserScans = JSON.parse(storedUserScans);
+      setUserScans(parsedUserScans);
+      
+      // Fix for TypeScript error: ensure we're calculating the sum correctly with proper type handling
+      const scansTotal = Object.values(parsedUserScans).reduce(
+        (acc: number, val: number) => acc + val, 
+        0
+      );
+      setTotalScansToday(scansTotal);
     }
     
     // Load current user (if any)

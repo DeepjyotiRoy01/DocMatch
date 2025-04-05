@@ -22,6 +22,7 @@ import {
   DialogContent,
   DialogTrigger
 } from "@/components/ui/dialog";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import AuthDialog from "@/components/auth/AuthDialog";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Toggle } from "@/components/ui/toggle";
@@ -127,29 +128,6 @@ export const AppLayout = () => {
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
-            
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-xs font-bold uppercase tracking-wider">
-                Theme
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton 
-                      tooltip="Toggle Theme"
-                      onClick={handleThemeToggle}
-                    >
-                      {theme === "dark" ? (
-                        <Sun className="h-5 w-5 mr-3" />
-                      ) : (
-                        <Moon className="h-5 w-5 mr-3" />
-                      )}
-                      <span>Toggle Theme</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
           </SidebarContent>
         </Sidebar>
         <div className="flex-1 overflow-auto bg-gradient-to-br from-background to-secondary/30 relative">
@@ -194,9 +172,21 @@ export const AppLayout = () => {
                 
                 <Dialog open={authOpen} onOpenChange={setAuthOpen}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" className="gap-2 bg-primary/10 hover:bg-primary/20 border-primary/20">
-                      <LogIn className="h-4 w-4" />
-                      <span>{currentUser ? currentUser.name : "Login / Sign Up"}</span>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="bg-primary/10 hover:bg-primary/20 border-primary/20"
+                      title={currentUser ? `Logged in as ${currentUser.name}` : "Login / Sign Up"}
+                    >
+                      {currentUser ? (
+                        <Avatar className="h-8 w-8">
+                          <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                            {currentUser.name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      ) : (
+                        <LogIn className="h-4 w-4" />
+                      )}
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-md">

@@ -1,4 +1,4 @@
-# Welcome to your Lovable project
+# Welcome to your DocMatch project
 This project is a TypeScript or React project which can upload of documents and scan the documents along with matching the documents using different algorithms.
 
 **Use your preferred IDE**

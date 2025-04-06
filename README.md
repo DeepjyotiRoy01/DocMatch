@@ -46,3 +46,6 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+
+
+## Video reference of the website is available under the name TutorialRun in the folder

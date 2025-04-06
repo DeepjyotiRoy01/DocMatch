@@ -11,7 +11,7 @@ Follow these steps:
 
 ```sh
 # Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+git clone <THIS_GIT_URL>
 
 # Step 2: Navigate to the project directory.
 cd <YOUR_PROJECT_NAME>
@@ -46,7 +46,3 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
-
-## Deployment of this project
-
-Simply open [Lovable](https://lovable.dev/projects/96e8bf58-f34a-4502-a7f1-853141a6c630) and click on Share -> Publish.
